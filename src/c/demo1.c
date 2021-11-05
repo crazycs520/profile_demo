@@ -9,7 +9,8 @@ int main() {
 int handle_request() {
     prepare();
     process_data();
-    return finish();
+    finish();
+    return 0;
 }
 
 
