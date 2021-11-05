@@ -1,6 +1,6 @@
 #include <stdio.h>
 int main() {
-    for (int i = 0; i <= 100; i = i + 1){
+    for (int i = 0; i <= 100000000000; i = i + 1){
         handle_request();
     }
     return 0;
@@ -8,12 +8,12 @@ int main() {
 
 int handle_request() {
     prepare();
-    write_data();
+    process_data();
     return finish();
 }
 
 
-const int CYCLE= 100000000;
+const int CYCLE= 1000000;
 
 int prepare() {
     int sum = 0;
@@ -23,7 +23,7 @@ int prepare() {
     return 0;
 }
 
-int write_data() {
+int process_data() {
     int sum = 0;
     for (int i = 0; i <= 7*CYCLE; i = i + 1){
         sum+=i;
