@@ -1,21 +1,21 @@
 #include <stdio.h>
-int main() {
-    for (int i = 0; i <= 100; i = i + 1){
-        query(i);
+
+void handle_sql_request(int load);
+
+void main() {
+    while (1)
+    {
+        // mock for different kinds of sql request.
+        for (int i = 0; i <= 100; i = i + 1){
+            handle_sql_request(i);
+        }
     }
-    return 0;
 }
 
-int query(int load){
-    read_data(load);
-    return 0;
-}
-
-int read_data(int n) {
-    n = n* 100000000;
+void handle_sql_request(int load) {
+    const int CYCLE = 1000000;
     int sum = 0;
-    for (int i = 0; i <= n; i = i + 1){
+    for (int i = 0; i <= load * CYCLE; i++){
         sum+=i;
     }
-    return sum;
 }
