@@ -7,7 +7,7 @@ import (
 )
 
 const SampleFreq = 1000
-const ReportInterval = time.Second * 2
+const ReportInterval = time.Second * 1
 
 var (
 	GlobalCollector *Collector
@@ -81,8 +81,8 @@ func (r *Collector) RegisterWorker(tagPtr *int64) {
 }
 
 func (r *Collector) Run() {
-	sampleTicker := time.NewTicker(time.Second / time.Duration(SampleFreq))
 	reportTicker := time.NewTicker(ReportInterval)
+	sampleTicker := time.NewTicker(time.Second / time.Duration(SampleFreq))
 	defer func() {
 		sampleTicker.Stop()
 		reportTicker.Stop()
@@ -92,13 +92,13 @@ func (r *Collector) Run() {
 
 	for {
 		select {
+		case tag := <-r.tagRegister:
+			tags = append(tags, tag)
 		case <-sampleTicker.C:
 			for _, tagPtr := range tags {
 				tag := atomic.LoadInt64(tagPtr)
 				summary[tag]++
 			}
-		case tag := <-r.tagRegister:
-			tags = append(tags, tag)
 		case <-reportTicker.C:
 			GlobalReporter.CollectData(summary)
 			// clear current time window data.
