@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-const SampleFreq = 1000
+const SampleFreq = 100
 const ReportInterval = time.Second * 1
 
 var (
@@ -23,22 +23,19 @@ func init() {
 }
 
 func main() {
-	taskCh := make(chan *Task, 128)
+	requestCh := make(chan *Request, 128)
 	// start the worker
-	workerCount := 2
+	workerCount := 4
 	for i := 0; i < workerCount; i++ {
 		w := NewWorker()
-		go w.Run(taskCh)
+		go w.Run(requestCh)
 	}
-	// send task to worker.
+	// send request to worker.
 	for {
 		for id := 1; id <= 4; id++ {
-			task := &Task{
-				tag:  int64(id),
-				load: id,
-			}
-			taskCh <- task
-			// time.Sleep(time.Millisecond * 100)
+			req := &Request{tag: int64(id)}
+			requestCh <- req
+			//time.Sleep(time.Millisecond * 100)
 		}
 	}
 }
@@ -53,18 +50,28 @@ func NewWorker() *Worker {
 	return w
 }
 
-func (w *Worker) Run(taskCh chan *Task) {
+func (w *Worker) Run(requestCh chan *Request) {
 	for {
-		// get task from channel
-		task := <-taskCh
+		// get request from channel
+		req := <-requestCh
 
 		// set current running tag.
-		atomic.StoreInt64(&w.tag, task.tag)
+		atomic.StoreInt64(&w.tag, req.tag)
 
-		task.Run()
+		w.handleRequest(req)
 
 		// clear the tag.
 		atomic.StoreInt64(&w.tag, 0)
+	}
+}
+
+const CYCLE = 50000000
+
+func (w *Worker) handleRequest(req *Request) {
+	var sum int64
+	n := req.tag * CYCLE
+	for i := int64(0); i < n; i++ {
+		sum += i
 	}
 }
 
@@ -126,33 +133,25 @@ func (r *Reporter) Run() {
 		select {
 		case summary := <-r.dataChan:
 			total := 0
+			idle := summary[0]
 			for _, v := range summary {
 				total += v
 			}
-			fmt.Printf("\n\n%v: task profile:\n", time.Now().Format("2006-01-02T15:04:05"))
+			ratio := float64(total) / float64(SampleFreq)
+			totalUsage := float64(total-idle) / float64(total) * 100 * ratio
+			fmt.Printf("\n\n%v total usage: %.0f%%, total sample count: %v, frequency: %v:\n", time.Now().Format(time.RFC3339), totalUsage, total, SampleFreq)
 			for tag, v := range summary {
 				usage := float64(v) / float64(total) * 100
 				if tag != 0 {
-					fmt.Printf("task_id: %v, cost: %.0f%% \n", tag, usage)
+					fmt.Printf("request_id: %v, cpu usage: %.0f%% \n", tag, usage)
 				} else {
-					fmt.Printf("idle            : %.0f%% \n", usage)
+					fmt.Printf("idle                    : %.0f%% \n", usage)
 				}
 			}
 		}
 	}
 }
 
-type Task struct {
-	tag  int64
-	load int
-}
-
-const CYCLE = 50000000
-
-func (t *Task) Run() {
-	n := t.load * CYCLE
-	sum := 0
-	for i := 0; i < n; i++ {
-		sum += i
-	}
+type Request struct {
+	tag int64
 }
