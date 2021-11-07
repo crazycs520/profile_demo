@@ -70,11 +70,11 @@ fn main() {
         });
     }
 
-    for n in 0..10 {
+    for n in 0..2 {
         thread::spawn(move || {
             println!("thread {:?} started", thread::current().id());
             while true {
-                let duration = time::Duration::from_millis(10);
+                let duration = time::Duration::from_millis(1);
                 thread::sleep(duration);
             }
         });
@@ -87,6 +87,7 @@ fn main() {
         // }
         let duration = time::Duration::from_millis(1000);
         thread::sleep(duration);
+        println!("");
         if let Some(guard) = PROFILER.try_write() {
             for (id,cnt) in guard.iter(){
                 println!("id {:?}, {:?}", id, cnt);
