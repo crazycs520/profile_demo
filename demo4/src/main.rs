@@ -4,10 +4,14 @@ use std::ptr::null_mut;
 use std::sync::atomic::{AtomicI64,Ordering};
 use nix::sys::signal;
 use std::{thread, time};
-use std::time::{Duration, SystemTime};
+use std::thread::ThreadId;
+use std::time::{SystemTime};
+use std::collections::HashMap;
+use parking_lot::RwLock;
 
 
 lazy_static::lazy_static! {
+    pub(crate) static ref PROFILER: RwLock<HashMap<ThreadId,i64>> = RwLock::new(HashMap::new());
     pub static ref INT_COUNTER: Arc<AtomicI64> = Arc::new(AtomicI64::new(0));
 }
 
@@ -32,7 +36,8 @@ extern "C" {
 const ITIMER_PROF: c_int = 2;
 
 fn main() {
-    let interval = 1e6 as i64 / i64::from(1);
+    let freq = 100;
+    let interval = 1e6 as i64 / i64::from(freq);
         let it_interval = Timeval {
             tv_sec: interval / 1e6 as i64,
             tv_usec: interval % 1e6 as i64,
@@ -82,8 +87,11 @@ fn main() {
         // }
         let duration = time::Duration::from_millis(1000);
         thread::sleep(duration);
-        let cnt = INT_COUNTER.load(Ordering::SeqCst);
-        print!("{}\n", cnt);
+        if let Some(guard) = PROFILER.try_write() {
+            for (id,cnt) in guard.iter(){
+                println!("id {:?}, {:?}", id, cnt);
+            }
+        }
     }
 }
 
@@ -92,6 +100,9 @@ fn main() {
 #[allow(clippy::uninit_assumed_init)]
 extern "C" fn perf_signal_handler(_signal: c_int) {
     INT_COUNTER.fetch_add(1, Ordering::SeqCst);
-    let now = SystemTime::now();
-    println!("id {:?}, {:?}", thread::current().id(), now);
+    let thread_id = thread::current().id();
+    if let Some(mut guard) = PROFILER.try_write() {
+        let cnt = guard.entry(thread_id).or_insert(0);
+        *cnt = *cnt + 1;
+    }
 }
