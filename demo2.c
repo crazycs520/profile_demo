@@ -16,7 +16,7 @@ int main() {
 void handle_sql_request(int load) {
     const int CYCLE = 1000000;
     int sum = 0;
-    for (int i = 0; i <= load * CYCLE; i++){
-        sum+=i;
+    for (int i = 0; i <= load * CYCLE; i = i + 1){
+        sum = sum + i;
     }
 }

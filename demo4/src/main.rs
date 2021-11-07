@@ -65,11 +65,11 @@ fn main() {
         });
     }
 
-    for n in 0..2 {
+    for n in 0..10 {
         thread::spawn(move || {
             println!("thread {:?} started", thread::current().id());
             while true {
-                let duration = time::Duration::from_millis(1000);
+                let duration = time::Duration::from_millis(10);
                 thread::sleep(duration);
             }
         });
