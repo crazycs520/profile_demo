@@ -2,7 +2,7 @@
 
 void handle_sql_request(int load);
 
-void main() {
+int main() {
     while (1)
     {
         // mock for different kinds of sql request.
@@ -10,6 +10,7 @@ void main() {
             handle_sql_request(i);
         }
     }
+    return 0;
 }
 
 void handle_sql_request(int load) {
