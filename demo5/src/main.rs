@@ -4,37 +4,15 @@ use std::collections::HashMap;
 use std::os::raw::c_int;
 use std::ptr::null_mut;
 use std::sync::atomic::{AtomicI64, Ordering};
-use std::sync::Arc;
 use std::{thread, time};
 
 lazy_static::lazy_static! {
     pub(crate) static ref PROFILER: RwLock<HashMap<i64,i64>> = RwLock::new(HashMap::new());
-    pub static ref INT_COUNTER: Arc<AtomicI64> = Arc::new(AtomicI64::new(0));
 }
 
 thread_local! {
     pub static REQUEST_TAG: AtomicI64 = AtomicI64::new(0);
 }
-
-#[repr(C)]
-#[derive(Clone)]
-struct Timeval {
-    pub tv_sec: i64,
-    pub tv_usec: i64,
-}
-
-#[repr(C)]
-#[derive(Clone)]
-struct Itimerval {
-    pub it_interval: Timeval,
-    pub it_value: Timeval,
-}
-
-extern "C" {
-    fn setitimer(which: c_int, new_value: *mut Itimerval, old_value: *mut Itimerval) -> c_int;
-}
-
-const ITIMER_PROF: c_int = 2;
 
 fn set_thread_tag(id: i64) {
     REQUEST_TAG.with(|tag| {
@@ -98,16 +76,36 @@ fn main() {
 const CYCLE: i64 = 1000000;
 
 fn handle_request(id: i64) {
-    if id == 4 {
-        thread::sleep(time::Duration::from_millis(1));
-        return
-    }
+    // if id == 4 {
+    //     thread::sleep(time::Duration::from_millis(1));
+    //     return
+    // }
     let n = id * CYCLE;
     let mut sum = 0;
     for i in 0..n {
         sum = sum + i * 2;
     }
 }
+
+#[repr(C)]
+#[derive(Clone)]
+struct Timeval {
+    pub tv_sec: i64,
+    pub tv_usec: i64,
+}
+
+#[repr(C)]
+#[derive(Clone)]
+struct Itimerval {
+    pub it_interval: Timeval,
+    pub it_value: Timeval,
+}
+
+extern "C" {
+    fn setitimer(which: c_int, new_value: *mut Itimerval, old_value: *mut Itimerval) -> c_int;
+}
+
+const ITIMER_PROF: c_int = 2;
 
 fn setup_timer() {
     let freq = 100;
