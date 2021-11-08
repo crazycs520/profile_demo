@@ -97,6 +97,7 @@ extern "C" {
 
 const ITIMER_PROF: c_int = 2;
 
+// Linux setitimer API doc: https://www.gnu.org/software/libc/manual/html_node/Setting-an-Alarm.html
 fn setup_timer() {
     let freq = 99;
     let interval = 1_000_000 / freq;
@@ -115,6 +116,7 @@ fn setup_timer() {
         )
     };
 
+    // Linux signal doc: https://man7.org/linux/man-pages/man7/signal.7.html
     let handler = signal::SigHandler::Handler(perf_signal_handler);
     unsafe { signal::signal(signal::SIGPROF, handler).expect("setup profile handler failed") };
 }
