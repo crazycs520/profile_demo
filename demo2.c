@@ -6,8 +6,8 @@ int main() {
     while (1)
     {
         // mock for different kinds of sql request.
-        for (int i = 0; i <= 100; i = i + 1){
-            handle_sql_request(i);
+        for (int id = 1; id <= 4; id = id + 1){
+            handle_sql_request(id);
         }
     }
     return 0;
