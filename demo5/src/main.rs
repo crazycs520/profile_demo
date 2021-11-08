@@ -108,7 +108,7 @@ extern "C" {
 const ITIMER_PROF: c_int = 2;
 
 fn setup_timer() {
-    let freq = 100;
+    let freq = 99;
     let interval = 1e6 as i64 / i64::from(freq);
     let it_interval = Timeval {
         tv_sec: interval / 1e6 as i64,
