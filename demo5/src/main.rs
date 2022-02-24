@@ -69,6 +69,10 @@ fn main() {
 
 const CYCLE: i64 = 1000000;
 fn handle_request(id: i64) {
+    // if id == 4 {
+    //     thread::sleep(time::Duration::from_millis(10));
+    //     return;
+    // }
     let n = id * CYCLE;
     let mut sum = 0;
     for i in 0..n {
