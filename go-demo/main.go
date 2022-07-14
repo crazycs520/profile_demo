@@ -31,7 +31,7 @@ func main() {
 			continue
 		}
 
-		time.Sleep(time.Second*2)
+		time.Sleep(time.Second * 2)
 
 		pprof.StopCPUProfile()
 
@@ -53,10 +53,10 @@ func handleRequest(id int) {
 	pprof.SetGoroutineLabels(ctx)
 	defer pprof.SetGoroutineLabels(context.Background())
 
-	//if id == 4 {
-	//	time.Sleep(time.Millisecond * 5)
-	//	return
-	//}
+	// if id == 4 {
+	// 	time.Sleep(time.Millisecond * 5)
+	// 	return
+	// }
 
 	n := id * CYCLE
 	sum := 0
